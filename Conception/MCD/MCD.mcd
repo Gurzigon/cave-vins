@@ -1,0 +1,12 @@
+VINS : réf._vin, couleur, année, appellation, nom, quantité, status, favoris
+CONTIENT, 0N CAVES, 0N VINS
+CAVES : réf._cave, nom
+
+CONCERNE, 01 VINS, 11 AVIS
+AVIS : réf._avis, note, commentaire
+POSSEDE, 0N UTILISATEURS, 11 CAVES
+
+:
+:
+UTILISATEURS : réf.utilisateur, pseudonyme, email, mot_de_passe
+

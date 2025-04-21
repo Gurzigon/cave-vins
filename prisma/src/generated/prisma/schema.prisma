@@ -27,7 +27,7 @@ model Vin {
   couleur     String
   annee       Int
   appellation String?
-  nom         String    @unique
+  nom         String
   quantite    Int
   is_consumed Boolean
   favoris     Boolean

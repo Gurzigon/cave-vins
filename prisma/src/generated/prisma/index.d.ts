@@ -7115,20 +7115,20 @@ export namespace Prisma {
 
   export type VinWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nom?: string
     AND?: VinWhereInput | VinWhereInput[]
     OR?: VinWhereInput[]
     NOT?: VinWhereInput | VinWhereInput[]
     couleur?: StringFilter<"Vin"> | string
     annee?: IntFilter<"Vin"> | number
     appellation?: StringNullableFilter<"Vin"> | string | null
+    nom?: StringFilter<"Vin"> | string
     quantite?: IntFilter<"Vin"> | number
     is_consumed?: BoolFilter<"Vin"> | boolean
     favoris?: BoolFilter<"Vin"> | boolean
     avis?: AvisListRelationFilter
     caves?: CaveListRelationFilter
     caveVins?: CaveVinListRelationFilter
-  }, "id" | "nom">
+  }, "id">
 
   export type VinOrderByWithAggregationInput = {
     id?: SortOrder

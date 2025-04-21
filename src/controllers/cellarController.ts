@@ -36,8 +36,7 @@ async(ctx) => {
         }
     })
     return ctx.json(cellarCreated)
-}    
-)
+})
 
 .patch(
 '/:id', 

@@ -1,0 +1,72 @@
+// Prisma schema file for your project
+
+// Configuration de la source de données (base de données PostgreSQL)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Utilise la variable d'environnement pour la connexion à la base de données
+}
+
+// Configuration du générateur (client Prisma)
+generator client {
+  provider = "prisma-client-js"
+  output   = "./src/generated/prisma"
+}
+
+// Table UTILISATEURS
+model Utilisateur {
+  id          String       @id @default(cuid())
+  pseudonyme  String   @unique
+  email       String   @unique
+  password    String
+  caves       Cave[]
+}
+
+// Table VINS
+model Vin {
+  id          String       @id @default(cuid())
+  couleur     String
+  annee       Int
+  appellation String?
+  nom         String   @unique
+  quantite    Int
+  is_consumed Boolean
+  favoris     Boolean
+  avis        Avis[]
+  caves       Cave[]   @relation("CavesVins")
+  caveVins    CaveVin[] // Ajout de la relation pour la table de jointure
+}
+
+// Table CAVES
+model Cave {
+  id            String       @id @default(cuid())
+  nom           String
+  utilisateurId String       
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id]) // Relation avec l'utilisateur
+  vins          Vin[]    @relation("CavesVins") // Relation avec les vins via la table de jointure
+  avis          Avis[]
+  
+
+  CaveVin CaveVin[]
+}
+
+// Table AVIS
+model Avis {
+  id          String       @id @default(cuid())
+  note        Int
+  commentaire String?
+  vinId       String 
+  vin         Vin      @relation(fields: [vinId], references: [id])
+  caveId      String?     // Relation avec Cave
+  cave        Cave?    @relation(fields: [caveId], references: [id])
+}
+
+// Table de liaison entre CAVES et VINS (relation plusieurs-à-plusieurs)
+model CaveVin {
+  caveId String       
+  vinId  String
+  cave   Cave @relation(fields: [caveId], references: [id], onDelete: Cascade)
+  vin    Vin  @relation(fields: [vinId], references: [id], onDelete: Cascade)
+
+  @@id([caveId, vinId]) // Composite primary key (clé primaire composée)
+  
+}

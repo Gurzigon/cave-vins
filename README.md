@@ -1,54 +1,92 @@
-# React + TypeScript + Vite
+# 🍷 Wine Cellar Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Une application web permettant aux utilisateurs de gérer leur cave à vin de manière simple et intuitive.
 
-Currently, two official plugins are available:
+## 🚀 Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Création de compte utilisateur
+- Gestion de caves personnelles
+- Ajout, modification et suppression de vins
+- Association de vins à une cave
+- Système de favoris et de consommation
+- Ajout d'avis et de notes sur les vins
 
-## Expanding the ESLint configuration
+## 🛠️ Technologies utilisées
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Frontend       | Backend        | Base de données |
+|----------------|----------------|------------------|
+| React (Vite)   |NodeJS / Hono  | PostgreSQL     |
+| TypeScript     | Prisma (ORM)   |                  |
+| Tailwind CSS   | REST API       |                  |
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 📦 Installation
+
+### 1. Clone du projet
+
+```bash
+git clone https://github.com/ton-user/ton-repo.git
+cd ton-repo
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Installation des dépendances
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+#### Frontend
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+cd frontend
+npm install
 ```
+
+#### Backend
+
+```bash
+cd backend
+npm install
+```
+
+### 3. Configuration des variables d’environnement
+
+Crée un fichier `.env` dans le dossier `backend` avec par exemple :
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/nom_base
+PORT=3000
+```
+
+### 4. Lancer le projet
+
+#### Backend
+
+```bash
+cd backend
+npx prisma generate
+npm run dev
+```
+
+#### Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+## 🗃️ Structure de la base de données
+
+- **UTILISATEURS** : id, pseudonyme, email, mot_de_passe
+- **CAVES** : id, nom, utilisateur_id (clé étrangère)
+- **VINS** : id, couleur, année, appellation, nom, quantité, favoris, is_consumed
+- **AVIS** : id, note, commentaire, vin_id
+- **CAVES_has_VINS** : cave_id, vin_id (relation plusieurs-à-plusieurs)
+
+## 📌 À venir
+
+- Authentification sécurisée avec JWT
+- Filtres par couleur, année, favoris
+- Tri et recherche de vins
+- Responsive design
+
+---
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus d’informations.

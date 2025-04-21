@@ -3,12 +3,14 @@ import { Hono } from 'hono';
 import wineRouter from './controllers/wineController';
 import userRouter from './controllers/userController';
 import authRouter from './controllers/authController';
+import cellarRouter from './controllers/cellarController';
 
 const app = new Hono();
 
 app.route('/api/v1', wineRouter);
 app.route('/api/v1', userRouter);
 app.route('/api/v1', authRouter);
+app.route('/api/v1', cellarRouter);
 
 serve({
     fetch: app.fetch,

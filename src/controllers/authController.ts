@@ -17,6 +17,12 @@ const signupSchema = z.object({
         'Le mot de passe doit contenir au moins 6 caractères, une lettre minuscule, une lettre majuscule et un chiffre'
       ),      
   })
+
+  const signinSchema = z.object({
+    email: z.string().email(),
+    password: z.string()
+  })
+
         
   authRouter.basePath('/auth')
   .post(
@@ -58,6 +64,47 @@ const signupSchema = z.object({
           accessToken   
       })
     })
+
+    .post(
+        '/signin',
+        zValidator('json', signinSchema),
+        async (ctx) => {
+          const data = ctx.req.valid('json')
+    
+          const userFound = await prisma.utilisateur.findUnique({
+            where: {
+              email: data.email
+            }
+          })
+        //   Si erreur d'identifiants ou utilisateur introuvable
+          if(!userFound) {
+            throw new HTTPException(401, {
+              message: 'Identifiants invalides'
+            })
+          }
+        //   On vérifie le password en bdd avec celui saisie par l'utilisateur
+          const passwordMatch = await argon2.verify(userFound.password, data.password)
+    
+          if(!passwordMatch) {
+            throw new HTTPException(401, {
+              message: 'Identifiants invalides'
+            })
+          }
+    
+          const accessToken = await generateAccessToken(userFound)
+    
+          const {             
+            password: _,           
+            ...user
+          } = userFound
+    
+          return ctx.json({
+            user,
+            accessToken
+          })
+        }
+      );
+    
       
  
      

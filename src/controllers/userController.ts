@@ -3,7 +3,7 @@ import { prisma } from "../utils/prisma";
 
 const userRouter = new Hono();
 
-userRouter.basePath('/user')
+userRouter.basePath('/users')
 
 .get('/', async (ctx) => {
 

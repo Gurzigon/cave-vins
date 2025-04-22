@@ -19,9 +19,17 @@ cellarRouter.basePath('/cellar')
 
 .get('/',jwtAuth, async (ctx) => {
 
-    const users = await prisma.cave.findMany();
+    const cellars = await prisma.cave.findMany({
+        include: {
+          CaveVin: {
+            include: {
+              vin: true 
+            }
+          }
+        }
+      });
    
-    return ctx.json(users);
+    return ctx.json(cellars);
 })
 
 .post(
@@ -72,6 +80,31 @@ async (ctx) => {
     return ctx.json(postCreated)
 }
 )
+
+.delete(
+    '/:id',
+    zValidator('param', idParamSchema),
+    async (ctx) => {
+      const { id } = ctx.req.valid('param')
+
+      // On vérifie que la cave existe
+      const cellarExists = await prisma.cave.findUnique({
+        where: { id }
+      })
+      if (!cellarExists) {
+        throw new HTTPException(404, {
+          message: 'Cave introuvable'
+        })
+      }
+
+      await prisma.cave.delete({
+        where: { id }
+      })
+      return ctx.json({
+        message: 'Cave supprimée'
+      })
+    }
+  )
 
 
   

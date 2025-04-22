@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import type { Vin } from "../../prisma/src/generated/prisma";
 import { jwtAuth } from "../middleware/jwtAuth";
+import { HTTPException } from "hono/http-exception";
 
 
 const wineRouter = new Hono()
@@ -16,7 +17,12 @@ const wineSchema = z.object({
   quantite   : z.number().int().min(0, "La quantité doit être un entier positif"),
   is_consumed: z.boolean(),
   favoris  :  z.boolean(),
+  
 });
+
+const idParamSchema = z.object({
+  id: z.string().cuid(),
+})
 
 wineRouter.basePath('/wines')
 
@@ -55,19 +61,25 @@ wineRouter.basePath('/wines')
 
   
 .post(
-          '/',jwtAuth,
+  '/:caveId',jwtAuth,
+  zValidator('param', z.object({ caveId: z.string() })),
   zValidator('json', wineSchema),
   async (ctx) => {
     const data = ctx.req.valid('json');
-    const userId = ctx.req.header('x-user-id');
+    const userId = ctx.req.header('x-user-id');    
+    const { caveId } = ctx.req.valid('param');
+
+    console.log(caveId)
 
     if (!userId) {
       return ctx.json({ error: 'Utilisateur non authentifié' }, 401);
-    }
+    };
+    
 
     // 1. On récupère la cave de l'utilisateur
     const userCave = await prisma.cave.findFirst({
       where: {
+        id: caveId,
         utilisateurId: userId
       }
     });
@@ -93,13 +105,38 @@ wineRouter.basePath('/wines')
     // 3. On fait l'association dans la table intermédiaire
     await prisma.caveVin.create({
       data: {
-        caveId: userCave.id,
+        caveId: caveId,
         vinId: vin.id
       }
     });
     console.log(vin)
     return ctx.json({ vin });
   }
-  );   
+  )
+  
+  .delete(
+    '/:id',jwtAuth,
+    zValidator('param', idParamSchema),
+    async (ctx) => {
+      const { id } = ctx.req.valid('param')
+
+      // On vérifie que le vin existe
+      const wineExists = await prisma.vin.findUnique({
+        where: { id }
+      })
+      if (!wineExists) {
+        throw new HTTPException(404, {
+          message: 'Vin introuvable'
+        })
+      }
+
+      await prisma.vin.delete({
+        where: { id }
+      })
+      return ctx.json({
+        message: 'Vin supprimée'
+      })
+    }
+  )
 
 export default wineRouter;

@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import type { Vin } from "../../prisma/src/generated/prisma";
+import { jwtAuth } from "../middleware/jwtAuth";
 
 
 const wineRouter = new Hono()
@@ -20,7 +21,7 @@ const wineSchema = z.object({
 wineRouter.basePath('/wines')
 
 // Récupérer tous les vins
-  .get('/', async (ctx) => {
+  .get('/',jwtAuth, async (ctx) => {
 
         const users = await prisma.vin.findMany();
        
@@ -29,7 +30,7 @@ wineRouter.basePath('/wines')
 
 // Récupérer un vin par son id
 .get(
-    '/:id',  async (ctx) => {
+    '/:id', jwtAuth,  async (ctx) => {
     
         const id = ctx.req.param('id') 
         if (!id) {
@@ -54,7 +55,7 @@ wineRouter.basePath('/wines')
 
   
 .post(
-          '/',
+          '/',jwtAuth,
   zValidator('json', wineSchema),
   async (ctx) => {
     const data = ctx.req.valid('json');

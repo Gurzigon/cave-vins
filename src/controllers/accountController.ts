@@ -1,12 +1,13 @@
 import { Hono } from "hono"
 import { prisma } from "../utils/prisma";
+import { jwtAuth } from "../middleware/jwtAuth";
 
 const accountRouter = new Hono()
 
 accountRouter.basePath('/account')
 
 
-.get('/mywines',
+.get('/mywines',jwtAuth,
     async(ctx) => {
       const userId = ctx.req.header('x-user-id');
   

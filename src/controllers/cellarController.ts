@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
+import { jwtAuth } from "../middleware/jwtAuth";
 
 const cellarRouter = new Hono();
 
@@ -16,8 +17,15 @@ const idParamSchema = z.object({
 
 cellarRouter.basePath('/cellar')
 
+.get('/',jwtAuth, async (ctx) => {
+
+    const users = await prisma.cave.findMany();
+   
+    return ctx.json(users);
+})
+
 .post(
-'/',
+'/',jwtAuth,
 zValidator('json',cellarSchema),
 async(ctx) => {
     const data = ctx.req.valid('json')
@@ -39,7 +47,7 @@ async(ctx) => {
 })
 
 .patch(
-'/:id', 
+'/:id', jwtAuth,
 zValidator('json', cellarSchema.partial()), 
 zValidator('param', idParamSchema), 
 async (ctx) => {

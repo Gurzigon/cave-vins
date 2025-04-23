@@ -1,4 +1,4 @@
-# 🍷 Wine Cellar Manager
+# 🍷 Ma cave à vins
 
 Une application web permettant aux utilisateurs de gérer leur cave à vin de manière simple et intuitive.
 
@@ -30,17 +30,7 @@ cd ton-repo
 
 ### 2. Installation des dépendances
 
-#### Frontend
-
 ```bash
-cd frontend
-npm install
-```
-
-#### Backend
-
-```bash
-cd backend
 npm install
 ```
 
@@ -55,18 +45,7 @@ PORT=3000
 
 ### 4. Lancer le projet
 
-#### Backend
-
 ```bash
-cd backend
-npx prisma generate
-npm run dev
-```
-
-#### Frontend
-
-```bash
-cd frontend
 npm run dev
 ```
 
@@ -81,7 +60,7 @@ npm run dev
 ## 📌 À venir
 
 - Authentification sécurisée avec JWT
-- Filtres par couleur, année, favoris
+- Filtres par couleur, année, favoris ...
 - Tri et recherche de vins
 - Responsive design
 

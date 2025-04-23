@@ -19,7 +19,7 @@ cellarRouter.basePath('/cellar')
 
 .get('/',jwtAuth, async (ctx) => {
   const userId = ctx.req.header('x-user-id');
-
+  try{
     const cellars = await prisma.cave.findMany({
       where: {
         utilisateurId: userId,
@@ -34,12 +34,19 @@ cellarRouter.basePath('/cellar')
       });
    
     return ctx.json(cellars);
+  }catch (error){
+    console.error('Erreur récupération des caves :', error);
+    return ctx.json({ error: 'Une erreur est survenue lors de la récupération des caves' }, 500);
+  }
+
+   
 })
 
 .get(
     '/:id', jwtAuth,  async (ctx) => {
       const userId = ctx.req.header('x-user-id');
-        const id = ctx.req.param('id') 
+      const id = ctx.req.param('id');
+
         if (!id) {
           return ctx.json({ error: 'L\'ID fourni n\'est pas valide.' }, 400);
         }
@@ -53,10 +60,11 @@ cellarRouter.basePath('/cellar')
         
             if (!cellarById) {
               return ctx.json({ error: 'Cave introuvable.' }, 404);
-            }
+            };
         
             return ctx.json(cellarById);
           } catch (error) {
+            console.error('Erreur récupération d\'une cave :', error);
             return ctx.json({ error: 'Une erreur est survenue lors de la récupération de la cave.' }, 500);
           }
         })
@@ -65,22 +73,25 @@ cellarRouter.basePath('/cellar')
     '/',jwtAuth,
     zValidator('json',cellarSchema),
         async(ctx) => {
-            const data = ctx.req.valid('json')
-
-            const userId = ctx.req.header('x-user-id')
+            const data = ctx.req.valid('json');
+            const userId = ctx.req.header('x-user-id');
             if (!userId) {
                 throw new HTTPException(400, {
-                    message: 'ID utilisateur manquant dans les headers'
+                    message: 'ID utilisateur manquant'
                 });
-                }
-
-            const cellarCreated = await prisma.cave.create({
+                };
+            try {
+              const cellarCreated = await prisma.cave.create({
                 data : {
                     ...data,
                     utilisateurId: userId
                 }
-            })
-            return ctx.json(cellarCreated)
+            });
+              return ctx.json(cellarCreated)
+            } catch (error) {
+              console.error('Erreur création cave :', error);
+              return ctx.json({ error: 'Une erreur est survenue lors de la création de la cave.' }, 500);
+            }            
         })
 
 .patch(
@@ -88,27 +99,32 @@ cellarRouter.basePath('/cellar')
     zValidator('json', cellarSchema.partial()), 
     zValidator('param', idParamSchema), 
         async (ctx) => {
-            const data = ctx.req.valid('json')
-            const { id } = ctx.req.valid('param')
+            const data = ctx.req.valid('json');
+            const { id } = ctx.req.valid('param');
 
-            // On vérifie que le post existe
-            const postExists = await prisma.cave.findUnique({
-            where: { id }
-            })
-            if (!postExists) {
-            throw new HTTPException(404, {
-                message: 'Post not found'
-            })
-            }
-
-            const postCreated = await prisma.cave.update({
-            where: { id },
-            data
-            })
-
-            return ctx.json(postCreated)
-        }
-        )
+            try {
+              // On vérifie que la cave existe
+            const cellarExists = await prisma.cave.findUnique({
+              where: { id }
+              });
+              if (!cellarExists) {
+              throw new HTTPException(404, {
+                  message: 'Cellar not found'
+              })
+              };
+              
+              // On modifie la cave en BDD
+              const cellarCreated = await prisma.cave.update({
+              where: { id },
+              data
+              });
+  
+              return ctx.json(cellarCreated)
+            } catch (error) {
+              console.error('Erreur modification cave :', error);
+              return ctx.json({ error: 'Une erreur est survenue lors de la modiciation de la cave.' }, 500);
+            }            
+        })
 
 .delete(
       '/:id',
@@ -116,12 +132,10 @@ cellarRouter.basePath('/cellar')
       async (ctx) => {
             const userId = ctx.req.header('x-user-id');
             const { id } = ctx.req.valid('param');
-            try {
-              
-        
-              if (!userId) {
+            try {        
+                if (!userId) {
                 return ctx.json({ error: "Utilisateur non authentifié" }, 401);
-              }
+              };
         
               // On vérifie que la cave existe
               const cellar = await prisma.cave.findUnique({
@@ -130,12 +144,12 @@ cellarRouter.basePath('/cellar')
         
               if (!cellar) {
                 return ctx.json({ error: 'Cave introuvable' }, 404);
-              }
+              };
         
               // On vérifie que la cave appartient à l'utilisateur
               if (cellar.utilisateurId !== userId) {
                 return ctx.json({ error: 'Accès interdit à cette cave' }, 403);
-              }
+              };
         
               await prisma.cave.delete({
                 where: { id },
@@ -148,10 +162,7 @@ cellarRouter.basePath('/cellar')
               return ctx.json({ error: 'Une erreur est survenue lors de la suppression de la cave' }, 500);
             }
           }
-        )
+        );
         
 
-
-  
-
-export default cellarRouter
+export default cellarRouter;

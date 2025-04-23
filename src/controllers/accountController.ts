@@ -20,35 +20,39 @@ const updateUserSchema = z.object({
       /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{6,}$/, 
       'Le mot de passe doit contenir au moins 6 caractères, une lettre minuscule, une lettre majuscule et un chiffre'
     ) 
-}).partial()
+}).partial();
 
 accountRouter.basePath('/account')
 .get(
   '/',jwtAuth,
   zValidator('header', headerUserIdSchema),
   async (ctx) => {
-    const userId = ctx.req.valid('header')['x-user-id']
+    const userId = ctx.req.valid('header')['x-user-id'];
 
-    const userFound = await prisma.utilisateur.findUnique({
-      where: {
-        id: userId
-      },
-      omit: {
-        password: true
-      }
-    })
-
-    // Si l'utilisateur n'est pas trouvé, c'est qu'il n'est pas connecté ou qu'il n'existe pas
-    // On renvoie une erreur 401
-    if(!userFound) {
-      throw new HTTPException(401, {
-        message: 'Unauthorized'
-      })
-    }
-
-    return ctx.json(userFound)
-  }
-)
+    try {
+      const userFound = await prisma.utilisateur.findUnique({
+        where: {
+          id: userId
+        },
+        omit: {
+          password: true
+        }
+      });
+  
+      // Si l'utilisateur n'est pas trouvé, c'est qu'il n'est pas connecté ou qu'il n'existe pas
+      // On renvoie une erreur 401
+      if(!userFound) {
+        throw new HTTPException(401, {
+          message: 'Unauthorized'
+        })
+      };
+  
+      return ctx.json(userFound)
+    } catch (error) {
+      console.error('Erreur récupération compte :', error);
+      return ctx.json({ error: 'Une erreur est survenue lors de la récupération du compte' }, 500);
+    }    
+  })
 
 .patch(
   '/',
@@ -94,7 +98,4 @@ accountRouter.basePath('/account')
 )
 
 
-
-  
-
-  export default accountRouter;
+export default accountRouter;

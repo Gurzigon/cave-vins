@@ -30,7 +30,9 @@ const signupSchema = z.object({
     '/signup',
     zValidator('json', signupSchema),
     async (ctx) => {
-      const data = ctx.req.valid('json')
+
+      try {
+        const data = ctx.req.valid('json');
 
       // On vérifie que l'email et le pseudonyme n'existent pas déjà en BDD
       const userExists = await prisma.utilisateur.findFirst({
@@ -40,13 +42,13 @@ const signupSchema = z.object({
             { pseudonyme: data.pseudonyme }
           ]
         }
-      })
+      });
         // Si l'utilisateur existe déjà, on renvoie une erreur 409
         if (userExists) {
             throw new HTTPException(409, {
               message: 'User already exists'
             })
-          }
+          };
            // Avant d'ajouter l'utilisateur en BDD, on s'assure de hash le mot de passe
       const hashedPassword = await argon2.hash(data.password)
 
@@ -60,41 +62,48 @@ const signupSchema = z.object({
           omit: {
             password: true
           }
-        }) 
-        const accessToken = await generateAccessToken(user)
+        }); 
+        const accessToken = await generateAccessToken(user);
 
         return ctx.json({
           user,
           accessToken   
-      })
+      });
+      } catch (error) {
+        console.error('Erreur création compte :', error);
+        return ctx.json({ error: 'Une erreur est survenue lors de la création du compte' }, 500);
+      }
+      
     })
 
     .post(
         '/signin',
         zValidator('json', signinSchema),
         async (ctx) => {
-          const data = ctx.req.valid('json')
+
+          try {
+            const data = ctx.req.valid('json');
     
-          const userFound = await prisma.utilisateur.findUnique({
-            where: {
-              email: data.email,
+            const userFound = await prisma.utilisateur.findUnique({
+              where: {
+                email: data.email,
               
-            }
-          })
-        //   Si erreur d'identifiants ou utilisateur introuvable
+                }
+              });
+          //   Si erreur d'identifiants ou utilisateur introuvable
           if(!userFound) {
             throw new HTTPException(401, {
               message: 'Identifiants invalides'
             })
-          }
-        //   On vérifie le password en bdd avec celui saisie par l'utilisateur
-          const passwordMatch = await argon2.verify(userFound.password, data.password)
+          };
+          //   On vérifie le password en bdd avec celui saisie par l'utilisateur
+          const passwordMatch = await argon2.verify(userFound.password, data.password);
     
           if(!passwordMatch) {
             throw new HTTPException(401, {
               message: 'Identifiants invalides'
             })
-          }
+          };
     
           const accessToken = await generateAccessToken({ id: userFound.id });
 
@@ -114,14 +123,12 @@ const signupSchema = z.object({
               email: userFound.email
             }
           });
-        }
-      );
+          } catch (error) {
+            console.error('Erreur accès compte :', error);
+            return ctx.json({ error: 'Une erreur est survenue lors de l\'accès au compte' }, 500);
+          }          
+        });
     
-      
  
-     
-     
 
-    
-
-    export default authRouter
+  export default authRouter;

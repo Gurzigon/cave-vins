@@ -27,30 +27,64 @@ const idParamSchema = z.object({
 wineRouter.basePath('/wines')
 
 // Récupérer tous les vins
-  .get('/',jwtAuth, async (ctx) => {
+.get('/',jwtAuth,
+  async(ctx) => {
+    
+    const userId = ctx.req.header('x-user-id');
 
-        const users = await prisma.vin.findMany();
-       
-        return ctx.json(users);
-  })
+    if(!userId){
+      return ctx.json({error : "Utilisateur non authentifié"}, 401);
+    }
+    const cellars = await prisma.cave.findMany({
+      where : {
+        utilisateurId : userId
+      },
+      include : {
+          CaveVin: {
+              include: {
+                vin: true,  // Inclut les vins associés via la table de jointure
+              }
+            }
+      }
+    });
+    console.log("CAVES DE L'UTILISATEUR : ", JSON.stringify(cellars, null, 2));
+    const vins = cellars.flatMap(cave => cave.CaveVin.map(caveVin => caveVin.vin));
+    return ctx.json({vins})
+  }
+)
 
 // Récupérer un vin par son id
 .get(
     '/:id', jwtAuth,  async (ctx) => {
-    
-        const id = ctx.req.param('id') 
+
+        const id = ctx.req.param('id');
+        const userId = ctx.req.header('x-user-id');
+
         if (!id) {
           return ctx.json({ error: 'L\'ID fourni n\'est pas valide.' }, 400);
-        }
+        };
+
         try {
             const wineById = await prisma.vin.findUnique({
-              where: {
-                id: id,
-              },
+              where: { id },
+              include: {
+                  caveVins: {
+                    include: {
+                      cave: true
+                    }
+                  }
+              }
             });
         
             if (!wineById) {
               return ctx.json({ error: 'Vin introuvable.' }, 404);
+            };
+
+            // Vérification que l'utilisateur possède le vin
+            const belongsToUser = wineById.caveVins.some(cv => cv.cave.utilisateurId === userId);
+
+            if (!belongsToUser) {
+              return ctx.json({ error: 'Accès refusé.' }, 403);
             }
         
             return ctx.json(wineById);

@@ -5,6 +5,7 @@ import argon2 from "argon2";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import { generateAccessToken } from "../utils/jwt";
+import { serialize } from "hono/utils/cookie";
 
 const authRouter = new Hono();
 
@@ -31,10 +32,13 @@ const signupSchema = z.object({
     async (ctx) => {
       const data = ctx.req.valid('json')
 
-      // On vérifie que l'email n'existe pas déjà en BDD
-      const userExists = await prisma.utilisateur.findUnique({
+      // On vérifie que l'email et le pseudonyme n'existent pas déjà en BDD
+      const userExists = await prisma.utilisateur.findFirst({
         where: {
-          email: data.email
+          OR: [
+            { email: data.email },
+            { pseudonyme: data.pseudonyme }
+          ]
         }
       })
         // Si l'utilisateur existe déjà, on renvoie une erreur 409
@@ -73,7 +77,8 @@ const signupSchema = z.object({
     
           const userFound = await prisma.utilisateur.findUnique({
             where: {
-              email: data.email
+              email: data.email,
+              
             }
           })
         //   Si erreur d'identifiants ou utilisateur introuvable
@@ -91,17 +96,24 @@ const signupSchema = z.object({
             })
           }
     
-          const accessToken = await generateAccessToken(userFound)
-    
-          const {             
-            password: _,           
-            ...user
-          } = userFound
+          const accessToken = await generateAccessToken({ id: userFound.id });
+
+          ctx.header('Set-Cookie', serialize('access_token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 60 * 60 * 2,
+          }));
     
           return ctx.json({
-            user,
-            accessToken
-          })
+            message: 'Connexion réussie',
+            user: {
+              id: userFound.id,
+              pseudonyme: userFound.pseudonyme,
+              email: userFound.email
+            }
+          });
         }
       );
     

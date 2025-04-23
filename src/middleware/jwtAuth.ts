@@ -4,6 +4,7 @@ import { HTTPException } from 'hono/http-exception';
 
 export const jwtAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
+  
 
   if (!authHeader?.startsWith('Bearer ')) {
     throw new HTTPException(401, { message: 'Vous devez vous identifier avant de pouvoir réaliser cette action' });

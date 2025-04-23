@@ -111,29 +111,45 @@ cellarRouter.basePath('/cellar')
         )
 
 .delete(
-    '/:id',
-    zValidator('param', idParamSchema),
-        async (ctx) => {
-            const { id } = ctx.req.valid('param')
-
-            // On vérifie que la cave existe
-            const cellarExists = await prisma.cave.findUnique({
-                where: { id }
-            })
-            if (!cellarExists) {
-                throw new HTTPException(404, {
-                message: 'Cave introuvable'
-                })
+      '/:id',
+      zValidator('param', idParamSchema),
+      async (ctx) => {
+            const userId = ctx.req.header('x-user-id');
+            const { id } = ctx.req.valid('param');
+            try {
+              
+        
+              if (!userId) {
+                return ctx.json({ error: "Utilisateur non authentifié" }, 401);
+              }
+        
+              // On vérifie que la cave existe
+              const cellar = await prisma.cave.findUnique({
+                where: { id },
+              });
+        
+              if (!cellar) {
+                return ctx.json({ error: 'Cave introuvable' }, 404);
+              }
+        
+              // On vérifie que la cave appartient à l'utilisateur
+              if (cellar.utilisateurId !== userId) {
+                return ctx.json({ error: 'Accès interdit à cette cave' }, 403);
+              }
+        
+              await prisma.cave.delete({
+                where: { id },
+              });
+        
+              return ctx.json({ message: 'Cave supprimée' });
+        
+            } catch (error) {
+              console.error('Erreur suppression cave :', error);
+              return ctx.json({ error: 'Une erreur est survenue lors de la suppression de la cave' }, 500);
             }
-
-            await prisma.cave.delete({
-                where: { id }
-            })
-            return ctx.json({
-                message: 'Cave supprimée'
-            })
-            }
+          }
         )
+        
 
 
   

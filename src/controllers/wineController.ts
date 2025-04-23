@@ -152,24 +152,46 @@ wineRouter.basePath('/wines')
     '/:id',jwtAuth,
     zValidator('param', idParamSchema),
     async (ctx) => {
-      const { id } = ctx.req.valid('param')
+      const userId = ctx.req.header('x-user-id')
+      const { id } = ctx.req.valid('param');
 
-      // On vérifie que le vin existe
-      const wineExists = await prisma.vin.findUnique({
-        where: { id }
-      })
-      if (!wineExists) {
-        throw new HTTPException(404, {
-          message: 'Vin introuvable'
-        })
+      try {
+        // Récupération du vin avec ses caves et utilisateurs
+        const wine = await prisma.vin.findUnique({
+          where: { id },
+          include: {
+            caveVins: {
+              include: {
+                cave: true
+              }
+            }
+          }
+        });
+  
+        if (!wine) {
+          throw new HTTPException(404, {
+            message: 'Vin introuvable'
+          });
+        }
+  
+        // Vérification que le vin appartient à l'utilisateur
+        const belongsToUser = wine.caveVins.some(cv => cv.cave.utilisateurId === userId);
+  
+        if (!belongsToUser) {
+          return ctx.json({ error: 'Accès refusé : ce vin ne fait pas partie de votre cave.' }, 403);
+        }
+  
+        // Suppression du vin
+        await prisma.vin.delete({
+          where: { id }
+        });
+  
+        return ctx.json({ message: 'Vin supprimé avec succès' });
+  
+      } catch (error) {
+        console.error('Erreur suppression vin :', error);
+        return ctx.json({ error: 'Une erreur est survenue lors de la suppression.' }, 500);
       }
-
-      await prisma.vin.delete({
-        where: { id }
-      })
-      return ctx.json({
-        message: 'Vin supprimée'
-      })
     }
   )
 

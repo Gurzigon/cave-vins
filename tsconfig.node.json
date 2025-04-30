@@ -3,22 +3,33 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2023"],
-    "module": "ESNext",
+    "module": "CommonJS", 
+    "moduleResolution": "node", 
     "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
+    /* Linting et validation des types */
+    "strict": true, 
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Pour le projet backend avec Prisma et Hono */
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["./node_modules/@prisma/client"]
+    },
+    "noImplicitAny": true,  // Empêche l'utilisation de `any` implicite
+    "isolatedModules": true,
+    "allowJs": false,
+    "skipDefaultLibCheck": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "src/**/*.ts",  // Inclure tous les fichiers TypeScript dans le répertoire src
+    "vite.config.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

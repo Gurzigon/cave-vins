@@ -2,9 +2,9 @@ import { Hono } from "hono"
 import { prisma } from "../utils/prisma";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import type { Vin } from "../../prisma/src/generated/prisma";
 import { jwtAuth } from "../middleware/jwtAuth";
 import { HTTPException } from "hono/http-exception";
+import type { Vin } from '@prisma/client';
 
 
 const wineRouter = new Hono()

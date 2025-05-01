@@ -33,10 +33,10 @@ const idParamSchema = z.object({
   id: z.string().cuid(),
 });
 
-wineRouter.basePath('/wines')
+const router = wineRouter
 
 // Récupérer tous les vins
-.get(
+router.get(
   '/',
   jwtAuth,
   async (ctx) => {
@@ -75,7 +75,7 @@ wineRouter.basePath('/wines')
 
 
 // Récupérer un vin par son id
-.get(
+router.get(
     '/:id', jwtAuth,  async (ctx) => {
       
         const id = ctx.req.param('id');
@@ -116,7 +116,7 @@ wineRouter.basePath('/wines')
         })
 
   
-  .post(
+  router.post(
     '/:caveId', jwtAuth,
     zValidator('param', z.object({ caveId: z.string() })),
     zValidator('json', wineSchema),
@@ -173,7 +173,7 @@ wineRouter.basePath('/wines')
       }
     })
 
-  .patch(
+  router.patch(
     '/:id', jwtAuth,
     zValidator('param', z.object({ id: z.string() })),  
     zValidator('json', updateWineSchema),  
@@ -229,7 +229,7 @@ wineRouter.basePath('/wines')
     })
   
   
-  .delete(
+  router.delete(
     '/:id',jwtAuth,
     zValidator('param', idParamSchema),
     async (ctx) => {

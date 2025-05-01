@@ -15,9 +15,9 @@ const idParamSchema = z.object({
     id: z.string().cuid(),
 })
 
-cellarRouter.basePath('/cellar')
+const router = cellarRouter
 
-.get('/',jwtAuth, async (ctx) => {
+router.get('/',jwtAuth, async (ctx) => {
   const userId = ctx.req.header('x-user-id');
   try{
     const cellars = await prisma.cave.findMany({
@@ -42,7 +42,7 @@ cellarRouter.basePath('/cellar')
    
 })
 
-.get(
+router.get(
     '/:id', jwtAuth,  async (ctx) => {
       const userId = ctx.req.header('x-user-id');
       const id = ctx.req.param('id');
@@ -69,7 +69,7 @@ cellarRouter.basePath('/cellar')
           }
         })
 
-.post(
+router.post(
     '/',jwtAuth,
     zValidator('json',cellarSchema),
         async(ctx) => {
@@ -94,7 +94,7 @@ cellarRouter.basePath('/cellar')
             }            
         })
 
-.patch(
+router.patch(
     '/:id', jwtAuth,
     zValidator('json', cellarSchema.partial()), 
     zValidator('param', idParamSchema), 
@@ -126,7 +126,7 @@ cellarRouter.basePath('/cellar')
             }            
         })
 
-.delete(
+router.delete(
       '/:id',
       zValidator('param', idParamSchema),
       async (ctx) => {

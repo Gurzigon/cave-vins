@@ -3,10 +3,10 @@ import { prisma } from "../utils/prisma";
 
 const userRouter = new Hono();
 
-userRouter.basePath('/users')
+const router = userRouter;
 
 // Routes pour faciliter le dev et tests
-.get('/', async (ctx) => {
+router.get('/', async (ctx) => {
 
     const users = await prisma.utilisateur.findMany();
    

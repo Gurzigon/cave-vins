@@ -22,8 +22,8 @@ const updateUserSchema = z.object({
     ) 
 }).partial();
 
-accountRouter.basePath('/account')
-.get(
+const router = accountRouter
+router.get(
   '/',jwtAuth,
   zValidator('header', headerUserIdSchema),
   async (ctx) => {
@@ -54,7 +54,7 @@ accountRouter.basePath('/account')
     }    
   })
 
-.patch(
+router.patch(
   '/',
   zValidator('header', headerUserIdSchema),
   zValidator('json', updateUserSchema),

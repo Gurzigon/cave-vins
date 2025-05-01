@@ -23,9 +23,10 @@ app.route('/api/v1/auth', authRouter);
 app.route('/api/v1/cellars', cellarRouter);
 
 
+const port = process.env.PORT || 3000;
 serve({
-    fetch: app.fetch,
-    port: 3000
-  }, (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`)
-  });
+  fetch: app.fetch,
+  port: Number(port),
+}, (info) => {
+  console.log(`Server is running on http://localhost:${info.port}`);
+});

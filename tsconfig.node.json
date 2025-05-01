@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
+    "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "CommonJS", 
     "moduleResolution": "node", 
     "skipLibCheck": true,
+    "declaration": true,  // Pour générer les fichiers .d.ts
+    "declarationDir": "./dist/types" , // Pour spécifier où les fichiers .d.ts doivent être placés
 
     /* Linting et validation des types */
     "strict": true, 

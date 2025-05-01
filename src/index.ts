@@ -16,6 +16,10 @@ app.use('*', cors())
 
 app.use('*', addUserIdHeader)
 
+app.get('/ping', (ctx) => {
+  return ctx.json({ message: 'pong' });
+});
+
 app.route('/api/v1/account', accountRouter);
 app.route('/api/v1/wines', wineRouter,);
 app.route('/api/v1/users', userRouter);

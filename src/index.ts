@@ -24,6 +24,7 @@ app.route('/api/v1/cellars', cellarRouter);
 
 
 const port = process.env.PORT || 3000;
+console.log(app.routes);
 serve({
   fetch: app.fetch,
   port: Number(port),

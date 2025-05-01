@@ -25,7 +25,7 @@ const signupSchema = z.object({
   })
 
         
-  const router = authRouter.basePath('/auth')
+  const router = authRouter
   router.post(
     '/signup',
     zValidator('json', signupSchema),

@@ -19,7 +19,7 @@ app.use('*', addUserIdHeader)
 app.route('/api/v1', accountRouter);
 app.route('/api/v1', wineRouter,);
 app.route('/api/v1', userRouter);
-app.route('/api/v1', authRouter);
+app.route('/api/v1/auth', authRouter);
 app.route('/api/v1', cellarRouter);
 
 

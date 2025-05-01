@@ -1,28 +1,34 @@
-# Étape 1 : Build
-FROM node:23-alpine AS build
+# Étape 1 - Build
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install
+# Installer pnpm
+RUN npm install -g pnpm
 
+# Copier uniquement les fichiers nécessaires à l'installation
+COPY package.json pnpm-lock.yaml ./
+
+# Installer les dépendances
+RUN pnpm install
+
+# Copier le reste de l'application
 COPY . .
 
-# Build Prisma
+# Générer Prisma Client et compiler le code
 RUN pnpm prisma generate
-RUN pnpm run migrate:deploy
-RUN pnpm run build
+RUN pnpm build
 
-# Étape 2 : Runtime
-FROM node:23-alpine
+# Étape 2 - Image finale pour exécution
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY --from=build /app /app
+# Copier le build et les dépendances depuis l'étape précédente
+COPY --from=builder /app /app
 
-ENV NODE_ENV=production
+# Exposer le port Railway
+EXPOSE 8080
 
-# Prisma ne supporte pas SQLite dans Alpine sans libssl, donc pour PostgreSQL ou MySQL ça va.
-RUN pnpm install --prod
-
+# Lancer l'app
 CMD ["node", "dist/index.cjs"]

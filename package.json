@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b && vite build",
+    "start": "node dist/index.cjs",
+    "prisma:generate": "prisma generate",
     "postinstall": "prisma generate",
     "migrate:deploy": "prisma migrate deploy",
-    "start": "node dist/index.cjs",
+    
     "lint": "biome .",
     "preview": "vite preview"
   },

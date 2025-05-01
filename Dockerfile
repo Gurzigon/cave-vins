@@ -1,34 +1,23 @@
-# Étape 1 - Build
-FROM node:22-alpine AS builder
-
-WORKDIR /app
-
-# Installer pnpm
-RUN npm install -g pnpm
-
-# Copier uniquement les fichiers nécessaires à l'installation
-COPY package.json pnpm-lock.yaml ./
-
-# Installer les dépendances
-RUN pnpm install
-
-# Copier le reste de l'application
-COPY . .
-
-# Générer Prisma Client et compiler le code
-RUN pnpm prisma generate
-RUN pnpm build
-
-# Étape 2 - Image finale pour exécution
+# Utilise une image plus sûre
 FROM node:22-alpine
 
+# Dossier de travail
 WORKDIR /app
 
-# Copier le build et les dépendances depuis l'étape précédente
-COPY --from=builder /app /app
+# Copie uniquement les fichiers nécessaires à l'installation
+COPY package.json pnpm-lock.yaml ./
 
-# Exposer le port Railway
-EXPOSE 8080
+# Installe pnpm et les dépendances sans exécuter de scripts
+RUN npm install -g pnpm && pnpm install --ignore-scripts
 
-# Lancer l'app
+# Copie tout (y compris le dossier prisma)
+COPY . .
+
+# On autorise ensuite les scripts de postinstall (prisma generate)
+RUN pnpm exec prisma generate
+
+# Build l'app (optionnel selon ton besoin)
+RUN pnpm run build
+
+# Lance l'app
 CMD ["node", "dist/index.cjs"]
